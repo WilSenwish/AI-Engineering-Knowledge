@@ -1,0 +1,12 @@
+# ===== 本地/IDE/系统噪声 =====
+.workbuddy/
+.idea/
+.DS_Store
+*.swp
+Thumbs.db
+
+# ===== Python 本地环境（如存在） =====
+__pycache__/
+*.pyc
+venv/
+.venv/
