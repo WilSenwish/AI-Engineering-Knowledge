@@ -75,6 +75,7 @@
 | [README](03-Java生态生产实践栈/README.md) | Java 栈总览、双极对照（自研 Ragent/Nexus + 平台 RuoYi/JEECG）、阶段进度 |
 | [平台级 AI 解决方案（RuoYi AI / JEECG AI）](03-Java生态生产实践栈/Java平台级AI解决方案-RuoYiAI与JEECG.md) | **平台视角补强**：两平台总览/功能矩阵/技术栈/能力对照、理论层映射、"平台 vs 自研"选型决策框架 |
 | [平台源码级模块拆解 · 对照 Ragent/Nexus](03-Java生态生产实践栈/Java平台源码级模块拆解对照Ragent与Nexus.md) | **平台视角·源码层**：实拉取 RuoYi `ruoyi-chat` 与 JEECG `airag` 真实包结构，逐包映射 Ragent/Nexus 模块，点明平台产品化与自研护城河 |
+| [Spring AI 生产级应用范式](03-Java生态生产实践栈/SpringAI生产级应用范式-llm-apps-java-spring-ai.md) | **组件级补强（G4）**：以 ThomasVitale/llm-apps-java-spring-ai 为参照，沉淀 Spring AI 多模型/结构化输出/工具调用/Memory/Guardrails/RAG/Observability/MCP 的生产代码范式 |
 | [阶段1 需求与架构设计](03-Java生态生产实践栈/阶段1-需求与架构设计/Java-AI工程化需求与架构设计.md) | AI vs 流程驱动、框架选型（Spring AI/LangChain4j/AgentScope）、模块化分层、原型验证 |
 | [阶段2·企业级范例](03-Java生态生产实践栈/阶段2-开发工程实现/Java企业级Agent工程实践.md) | 融合 Ragent + Nexus + JavaGuide：分层架构、双链路/三层执行器、检索融合、上下文治理、模型容错、11 种设计模式 |
 | [阶段3 测试质量保障](03-Java生态生产实践栈/阶段3-测试质量保障/Java-AI测试与质量保障.md) | 非确定性断言、Golden Set、RAGAS/DeepEval、关键路径测试、限流压测 |
@@ -115,7 +116,7 @@
 | [06-xiaolincoding](素材收集/06-xiaolincoding.md) | xiaolincoding.com | 图解网络/系统/MySQL/Redis 基础支撑域索引 |
 | [07-ruoyi-jeecg-platform](素材收集/07-ruoyi-jeecg-platform.md) | doc.ruoyiai.chat / jeecg.com / 公网解析 | Java 平台视角素材：RuoYi AI + JEECG AI 定位/功能/技术栈/对照（溯源） |
 | [08-xiaolincoding-base](素材收集/08-xiaolincoding-base.md) | xiaolincoding.com 四大图解系列 | 基础支撑域素材：网络/系统/MySQL/Redis 栏目地图 + AI 工程化映射点（溯源） |
-| [09-参考仓库待采集索引](素材收集/09-参考仓库待采集索引.md) | GitHub: awesome-llm-apps / AutoGPT / Dify / llm-apps-java-spring-ai | 四仓库落位规划 + 六大缺失项（G1–G6）分析，待 GitHub 恢复后采集 |
+| [09-参考仓库待采集索引](素材收集/09-参考仓库待采集索引.md) | GitHub: awesome-llm-apps / AutoGPT / Dify / llm-apps-java-spring-ai | 四仓库落位规划 + 六大缺失项（G1–G6）分析；**已于 2026-10-18 采集并落地 G1–G6** |
 
 ---
 
@@ -139,11 +140,11 @@
 
 ## 五、当前进度与下一步
 
-**已完成（十余阶段）**：理论层封口 → 双栈骨架 → 理论层补采回灌 → javaguide 子页封口 → Python 栈填充 → Python 阶段2 深化 → hello-agents 逐章拆解 → code 真实落盘（Ch7-9）→ 收口总导航 → Java 栈补全（全六阶段）→ Java 平台视角补采（RuoYi AI / JEECG AI）→ 基础支撑域实采（→ 05-基础支撑域）→ hello-agents Ch13-15 端到端案例原码落盘（40 文件）→ 两平台源码级模块拆解对照 Ragent/Nexus → **Ch10/11/12 Python 代码范式落盘（通信协议 MCP/A2A/ANP、Agentic-RL、评估；27 文件，code-examples 增至 67 文件 / 10400+ 行）** → **③ 05 基础支撑域原理精读回灌（Redis/MySQL/网络/OS 四篇各新增「五、原理精读」段，各取 2 篇核心长文做源码级精读并回扣 AI 工程化）** → **④ 跨文件质量打磨（修复 11 处占位路径、命名一致性核查，完成）** → **战略洞察文档落盘 + 四参考仓库采集规划与缺失项分析（G1–G6）**。
+**已完成（十余阶段）**：理论层封口 → 双栈骨架 → 理论层补采回灌 → javaguide 子页封口 → Python 栈填充 → Python 阶段2 深化 → hello-agents 逐章拆解 → code 真实落盘（Ch7-9）→ 收口总导航 → Java 栈补全（全六阶段）→ Java 平台视角补采（RuoYi AI / JEECG AI）→ 基础支撑域实采（→ 05-基础支撑域）→ hello-agents Ch13-15 端到端案例原码落盘（40 文件）→ 两平台源码级模块拆解对照 Ragent/Nexus → **Ch10/11/12 Python 代码范式落盘（通信协议 MCP/A2A/ANP、Agentic-RL、评估；27 文件，code-examples 增至 67 文件 / 10400+ 行）** → **③ 05 基础支撑域原理精读回灌（Redis/MySQL/网络/OS 四篇各新增「五、原理精读」段）** → **④ 跨文件质量打磨（修复 11 处占位路径、命名一致性核查，完成）** → **战略洞察文档落盘 + 四参考仓库采集规划（G1–G6）** → **四仓库采集落地 G1–G6**：① G1 自主智能体范式（1.1 第五范式 + AutoGPT 平台）、② G2 LLMOps 平台对照（Dify + AutoGPT，平台建设.md）、③ G3 案例/应用模式索引（02-Python README 第七节 + 04 README 应用模式库）、④ G4 Spring AI 生产范式（新文档）、⑤ G5 Agent 六形态部署（03 阶段4）、⑥ G6 成本与配额工程（04 成本ROI）。
 
 **建议下一步（按用户给定顺序）**：
 - ② ✅ 两平台源码级模块拆解对照 Ragent/Nexus（已完成）；
 - ① ✅ Ch10/11/12 的 Python 代码范式落盘（已完成）；
 - ③ ✅ 05 基础支撑域原理精读回灌（已完成）；
 - ④ ✅ 质量打磨：跨文件术语统一、去重检查、命名一致性核查、占位路径修复（已完成）；
-- ⑤ 🔄 战略文章落盘 + 四仓库规划（进行中）：已落盘 `战略洞察-Java工程能力移植与企业级AI应用形态.md` 与 `素材收集/09-参考仓库待采集索引.md`（含 G1–G6 缺失项）；四仓库（awesome-llm-apps / AutoGPT / Dify / llm-apps-java-spring-ai）因 GitHub 暂不可达**待采集**，恢复后按 09 文档顺序执行（G1 自主智能体范式、G2 LLMOps 平台对照、G3 案例索引、G4 Spring AI 范式、G5 Agent 部署形态、G6 成本配额工程）。
+- ⑤ ✅ 战略文章落盘 + 四仓库规划与采集（已完成）：落盘 `战略洞察-Java工程能力移植与企业级AI应用形态.md` 与 `素材收集/09-参考仓库待采集索引.md`；四仓库（awesome-llm-apps / AutoGPT / Dify / llm-apps-java-spring-ai）已直连采集并落地 G1–G6（见上方进度线）。

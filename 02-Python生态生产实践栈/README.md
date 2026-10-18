@@ -49,3 +49,28 @@
 - `Extra-Chapter` 社区精选：AgentSkills 解读、GUI/Web Agent 实战、Agent 自进化、踩坑经验
 - ai-agent-book 109 实验按章映射进各阶段（Ch2 上下文、Ch3 记忆/RAG、Ch4 工具/MCP、Ch5 Coding Agent、Ch7 评估、Ch8 后训练、Ch9 持续进化、Ch10 多 Agent）
 - 补充 LangGraph / AutoGen / LlamaIndex 最新版本的代码范式与踩坑
+
+## 七、应用模式索引（awesome-llm-apps 参照）
+
+> 来源：`github.com/Shubhamsaboo/awesome-llm-apps`（100+ Apache-2.0 开箱即用 app / agent / skills）。补足"真实应用模式索引"，与 阶段2 的逐章代码范式形成"范式 + 模式"互补（G3）。
+
+### 7.1 应用模式分类（taxonomy）
+
+| 模式 | 特征 | 代表示例 |
+|------|------|----------|
+| **Starter Agents** | 单文件、单 API key 即跑 | travel / data-analysis / medical-imaging / multimodal |
+| **Advanced Agents** | 生产级：tools + memory + 多步推理 | deep-research / fraud-investigation / system-architect |
+| **Multi-Agent Teams** | 多角色协作 | finance / legal / recruitment / real-estate / travel-planner |
+| **Always-on Agents** | 定时/事件驱动后台 agent | HN briefing / release radar |
+| **Voice Agents** | 实时语音输入输出 | audio tour / customer support / insurance claim |
+| **Generative UI** | 渲染交互 UI（表单/图表/看板） | dashboard canvas / MCP app builder |
+| **MCP Agents** | 经 Model Context Protocol 接工具 | browser / github / notion / travel-planner MCP |
+| **RAG 应用** | 朴素/代理式/纠正式(CRAG)/混合检索/知识图谱/视觉/本地 RAG（22+ 变体） | agentic-rag / corrective-rag / hybrid-search / knowledge-graph-rag |
+| **Memory 应用** | 跨会话记忆 | arxiv-agent-memory / travel-agent-memory |
+| **Chat-with-X** | 任意数据源对话 | GitHub / Gmail / PDF / YouTube |
+| **Optimization Tools** | 降 token/成本 | prompt-cache / compression |
+| **Agent Skills** | 给编码 agent 装能力（一键安装） | project-graveyard / dependency-doctor / self-improving |
+
+### 7.2 对知识库的价值
+- 把"能做什么 app"做成**模式清单**，反向指导 阶段2 范式选择（先定模式，再选 ReAct / Workflow / Multi-Agent）。
+- 与 `../04-横向支撑域/README.md` 的"应用模式库"互为表里（此处偏 Python 生态，04 偏通用库）。

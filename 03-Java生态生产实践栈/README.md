@@ -28,3 +28,7 @@
 - **Java 平台级 AI 解决方案：RuoYi AI 与 JEECG AI**（`Java平台级AI解决方案-RuoYiAI与JEECG.md`）：补齐"平台视角"——两个代表性 Java 开源 AI 平台（RuoYi AI 企业级助手、JEECG AI 低代码+AIGC），含双平台总览/功能矩阵/技术栈/能力对照、"平台内部如何呼应理论层与已建 Java 栈"映射表、"平台 vs 自研"选型决策框架。
 - **Java 平台源码级模块拆解 · 对照 Ragent / Nexus**（`Java平台源码级模块拆解对照Ragent与Nexus.md`）：把"平台视角"从功能层推进到**源码模块层**——实拉取 RuoYi AI（`ruoyi-chat` 的 `agent/mcp/service/observability/argtrace/websocket/factory/mapper` 等包）与 JEECG（`jeecg-boot-module-airag` 的 `llm/`+`app/`）真实目录树，逐包映射回 Ragent/Nexus 模块，并点明"平台产品化了什么、自研仍强在哪"。
 - 价值：与 `阶段2` 自研范式形成"产品化对照"，让平台"按钮背后的工程"一目了然；并给出 MVP 用平台、核心能力自研的**混合落地策略**。
+
+## Spring AI 生产级应用范式（组件级补强，横跨阶段 1/2/4/5/6）
+
+- **SpringAI 生产级应用范式（llm-apps-java-spring-ai 参考）**（`SpringAI生产级应用范式-llm-apps-java-spring-ai.md`）：以 ThomasVitale/llm-apps-java-spring-ai 为参照，沉淀 Spring AI 在 Chat/Embedding/Image/Audio 多模型、Structured Output、Tool Calling、Memory（Basic/JDBC/Spring Security/Vector Store）、Guardrails、RAG（Sequential/Branching/Conditional）、Observability、MCP 的**组件级生产代码范式**；与 Ragent/Nexus 自研、RuoYi/JEECG 平台形成"组件级 / 企业级自研 / 平台产品化"三角互补。直接印证战略洞察"用 Java 做核心服务编排"。

@@ -18,4 +18,8 @@
 - 平台建设为 `阶段2/4` 提供可复用的中台能力。
 - 成本 ROI 在 `阶段4/5` 量化，在 `阶段1` 做选型权衡。
 
+## 应用模式库（awesome-llm-apps 提炼）
+
+> 来源：`github.com/Shubhamsaboo/awesome-llm-apps`（与 `../02-Python生态生产实践栈/README.md` 第七节互为表里，此处偏通用模式库）。常见 AI 应用模式：Starter/Advanced Agents、Multi-Agent Teams、Always-on Agents、Voice Agents、Generative UI、MCP Agents、RAG（朴素/代理式/纠正式/混合/知识图谱/视觉/本地）、Memory 应用、Chat-with-X、Optimization Tools、Agent Skills。用于"选型 → 范式"的反向索引：先定应用模式，再映射到理论层 1.1 的 Agent 范式与 1.3 的 RAG 体系。
+
 > 详细内容随各纵向阶段素材深化后回灌本域。
