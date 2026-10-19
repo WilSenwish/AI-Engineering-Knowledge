@@ -225,6 +225,143 @@ agent/
 
 ---
 
+## 2.6 深入：agent/strategy 与 workflow/nodes 节点实现（类/节点级）
+
+> 本节能把 Dify 从"模块级"再推进到"类/节点级"。**关键架构洞察**：Dify 当前 `main` 已把工作流引擎抽离为独立包 **`graphon`**，`api/core/workflow/` 退化为**薄适配层**——节点基类、节点工厂、事件/变量原语全部来自 `graphon.*`。这意味着 Dify 的工作流内核已"库化"，可被任意 Python 项目复用，与 AutoGPT `blocks`+`executor`、RuoYi `ruoyi-aiflow` 同源，但工程化程度更高（独立可发布包）。
+
+### 2.6.1 节点统一实现范式（`graphon.nodes.base.node.Node`）
+
+所有节点都遵循同一套契约，差异仅在 `node_type` 枚举与 `_run()` 内部逻辑：
+
+```python
+# 任何节点的骨架（摘自 workflow/nodes/knowledge_retrieval/knowledge_retrieval_node.py）
+from graphon.nodes.base.node import Node
+from graphon.enums import BuiltinNodeTypes
+from graphon.node_events import NodeRunResult
+from collections.abc import Generator
+
+class KnowledgeRetrievalNode(Node[KnowledgeRetrievalNodeData]):
+    node_type = BuiltinNodeTypes.KNOWLEDGE_RETRIEVAL      # ① 类型枚举（注册表键）
+
+    def __init__(self, node_id, data, *, graph_init_params, graph_runtime_state, session_maker=None):
+        super().__init__(node_id=node_id, data=data,
+                         graph_init_params=graph_init_params,
+                         graph_runtime_state=graph_runtime_state)  # ② 依赖注入：图初始化参数 + 运行时状态
+        self._rag_retrieval = DatasetRetrieval()           # ③ 领域服务在构造期装配
+
+    @classmethod
+    def version(cls): return "1"                            # ④ 版本化（支持节点灰度/多版共存）
+
+    def _run(self) -> Generator[NodeEventBase]:             # ⑤ 执行体：yield 事件 + 返回 NodeRunResult
+        ...
+        yield NodeRunResult(status=..., outputs=..., metadata=...)
+```
+
+**五项契约要点**：
+1. **`node_type` 枚举即注册键**——节点靠枚举而非字符串名登记，类型安全；
+2. **构造期依赖注入**——`GraphInitParams`（图级配置：workflow_id/graph_config/run_context/call_depth）、`GraphRuntimeState`（变量池/运行态），领域服务（如 `DatasetRetrieval`）在 `__init__` 装配；
+3. **`version()` 类方法**——节点多版本共存，支持工作流 DAG 中旧节点不破坏升级；
+4. **`_run() -> Generator[NodeEventBase]`**——既 `yield` 流式事件（供前端实时渲染）又 `return/NodeRunResult`（最终输出），天然支撑 SSE/流式；
+5. **`NodeRunResult(status, outputs, metadata)`**——统一结果封装，状态机由 `graphon` 驱动。
+
+### 2.6.2 节点族全景（`workflow/nodes/` 9 类，API 实拉）
+
+| 目录 | 实现文件 | 节点职责 | 理论层（01）映射 | Java 栈（03）对照 |
+|------|---------|---------|----------------|------------------|
+| `agent/` | `agent_node.py` | Agent 节点：解析 `agent_strategy` → 调策略执行 | 1.1 范式 / 1.5 编排 | RuoYi `ruoyi-chat/agent` Supervisor |
+| `agent_v2/` | `agent_node.py`（`DifyAgentNode`） | 增强 Agent：绑定解析/`output_adapter`/失败编排/会话存储 | 1.1 + 1.5 | Ragent 多 Agent 协作 |
+| `knowledge_retrieval/` | `knowledge_retrieval_node.py` | RAG 召回：调 `core.rag.retrieval.dataset_retrieval.DatasetRetrieval` | **1.3 RAG 召回** | RuoYi `service` RAG / JEECG `llm/document` |
+| `knowledge_index/` | `knowledge_index_node.py` | 知识库索引构建 | 1.3 索引构建 | 同上 |
+| `datasource/` | `datasource_node.py` | 数据源起始节点（可作为图入口） | 1.3 / 阶段4 数据源 | 配置中心/数据源 |
+| `human_input/` | `callback.py`（`DifyHITLCallback`） | **人工介入（HITL）**：暂停/恢复/超时 | **1.5 人机协作 / 阶段6 人工确认** | 审批流/人工确认节点 |
+| `trigger_plugin/` | `trigger_event_node.py` | 插件事件触发（图入口） | 1.4 工具/事件 | 事件总线/Webhook |
+| `trigger_schedule/` | `trigger_schedule_node.py` | 定时触发（图入口） | 阶段4 调度 | RocketMQ 定时/XXL-JOB |
+| `trigger_webhook/` | `node.py` | Webhook 触发（图入口） | 1.4 / 阶段4 网关 | 网关/回调 |
+
+> 节点分两类角色：**入口型**（datasource + 3 个 trigger）与**处理型**（agent/agent_v2/knowledge_* / human_input）。入口节点对应"工作流组件/边缘私有化"等战略 G5 部署形态。
+
+### 2.6.3 `human_input/` —— 人工介入（HITL）的实现范式
+
+`callback.py` 的 `DifyHITLCallback` 把 Dify 语义桥接到 `graphon` 的 HITL 原语（`PauseRequested`/`Completed`/`Expired`）：
+
+```python
+class DifyHITLCallback:
+    pause_requested_type = PauseRequested
+    # 节点超时 vs 全局过期：仅显式节点超时走 timeout handle 恢复；全局过期视为非法恢复态
+    def __init__(self, ...): ...
+# 表单渲染：暂停前用变量池渲染 form_content
+def render_form_content_before_submission(node_data, *, variable_pool) -> str:
+    return convert_template(variable_pool, node_data.form_content).markdown
+```
+
+→ 这实现了**"可暂停/可恢复的长链路 Agent"**：工作流跑到 human_input 节点即暂停、等人工回填后再续跑——正是战略文章所言"Agent 是有状态长链路任务，需引入状态机/会话快照"的工程落地，也是 Java 工程师做 Agent 时最缺的一环（传统 Web 无状态）。
+
+### 2.6.4 `agent/strategy` —— Agent 策略的插件化
+
+`api/core/agent/strategy` 只有两个文件，却定义了 Agent 执行的**策略模式 + 插件外置**架构：
+
+```python
+# strategy/base.py
+class BaseAgentStrategy(ABC):
+    def invoke(self, params, user_id, conversation_id=None, app_id=None,
+               message_id=None, credentials=None) -> Generator[AgentInvokeMessage]:
+        yield from self._invoke(params, user_id, conversation_id, app_id, message_id, credentials)
+    def get_parameters(self) -> Sequence[AgentStrategyParameter]: return []
+    @abstractmethod
+    def _invoke(self, params, user_id, ...) -> Generator[AgentInvokeMessage]: pass
+
+# strategy/plugin.py
+class PluginAgentStrategy(BaseAgentStrategy):
+    tenant_id: str; declaration: AgentStrategyEntity
+    @override
+    def _invoke(self, params, user_id, ...) -> Generator[AgentInvokeMessage]:
+        manager = PluginAgentClient()
+        yield from manager.invoke(
+            tenant_id=self.tenant_id, user_id=user_id,
+            agent_provider=self.declaration.identity.provider,   # 策略来自哪个插件供应商
+            agent_strategy=self.declaration.identity.name,        # 具体策略名
+            agent_params=params, conversation_id=conversation_id, app_id=app_id,
+            context=PluginInvokeContext(credentials=credentials or InvokeCredentials()),
+        )
+```
+
+**要点**：`AgentNode`（2.6.2）在 `_run()` 中通过 `strategy_resolver.resolve(tenant_id, provider, name)` 取出一个 `BaseAgentStrategy` 实例并 `invoke()`——**Agent 的具体推理策略（CoT/FC/自定义）被完全外置为插件**，节点本身只负责编排与 IO。这与 RuoYi `ruoyi-chat/agent`（Supervisor 写死在代码里）形成对照：Dify 用插件化换灵活性，Java 栈用硬编码换可控性——选型权衡见 §2.5。
+
+### 2.6.5 `node_factory.py` —— 节点自注册机制
+
+```python
+@lru_cache(maxsize=1)
+def register_nodes() -> None:
+    """Import production node modules so they self-register with Node."""
+    _import_node_package("graphon.nodes")           # 内置节点（库提供）
+    _import_node_package("core.workflow.nodes")     # Dify 业务节点（本地扩展）
+
+def get_node_type_classes_mapping() -> Mapping[NodeType, Mapping[str, type[Node]]]:
+    register_nodes()
+    return Node.get_node_type_classes_mapping()     # NodeType -> {version: NodeClass}
+
+def resolve_workflow_node_class(*, node_type, node_version, node_data=None) -> type[Node]:
+    node_mapping = get_node_type_classes_mapping().get(node_type)
+    if not node_mapping: raise ValueError(f"No class mapping for {node_type}")
+    ...
+```
+
+**机制**：节点类在**模块导入时自注册**到 `Node` 基类（`NodeType -> {version: class}` 映射），工厂只需 `import` 包即可完成注册（装饰器/元类模式）。这与 AutoGPT `blocks` 注册表、RuoYi `ruoyi-aiflow` 节点注册同构——**声明式 DAG + 自注册节点工厂**是这类引擎的通用范式。
+
+### 2.6.6 节点级下钻结论（呼应 01/03 层）
+
+| 维度 | Dify（graphon 化） | 对本库的启示 |
+|------|-------------------|------------|
+| 引擎形态 | 工作流内核抽成独立 `graphon` 库 | 自研 Ragent/Nexus 也可把执行引擎库化，复用到多端（G5 部署形态） |
+| 节点契约 | `Node[NodeData]` + `node_type` 枚举 + `version()` + `_run()` 生成器 | 自研节点应统一接口，便于可视化编排与灰度 |
+| 策略外置 | Agent 推理策略插件化（`PluginAgentClient`） | Java 栈可参考：把"Agent 行为"做成可插拔策略，而非硬编码 Supervisor |
+| HITL | `graphon` HITL 原语 + Dify 表单桥接 | 长链路 Agent 的"暂停/恢复"是生产必备，需补状态机/快照 |
+| 注册 | 模块导入即自注册 | 节点扩展零配置，新增节点不碰工厂代码 |
+
+→ 把本节与 `01-通用理论原理层/1.1-Agent本质与核心范式.md`（第五范式）、`1.5-多Agent协作与编排.md`（图引擎）、`1.3-RAG技术体系.md`（检索节点）、`03-Java.../阶段2`（自研范式）、`平台建设.md`（G2）合参，Dify 的节点级实现就是一份"生产级图/块编排引擎参考实现"。
+
+---
+
 ## 三、合参：平台形态演化与战略落位
 
 把 AutoGPT（classic→platform）、Dify、Java 双平台、自研 Ragent/Nexus 放在一条时间/范式轴上：

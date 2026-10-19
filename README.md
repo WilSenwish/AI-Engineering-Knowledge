@@ -147,6 +147,8 @@
 
 **收口质检（2026-10-19）**：对全库 67 个 Python 示例执行 `py_compile` 语法校验（100% 通过）；对 51 篇 Markdown 的 78 条内部相对链接做完整性校验——修复 9 处真实断链（阶段1 文档上跳层级错误、05-README 同目录多余前缀、根 README 规划文件名 `%20` 编码），仅余 1 处代码块内 `name]["func"](param)` 正则误报（非链接、代码正确）。全库链接与示例进入"可发布"状态。
 
+**Dify 节点级下钻（2026-10-19）**：在 `04-横向支撑域/参考平台源码级拆解-AutoGPT与Dify.md` 新增 **§2.6 类/节点级深入**——Dify 已将工作流引擎抽成独立包 `graphon`（`core/workflow` 退化为薄适配层）；节点统一契约 `Node[NodeData]`+`node_type` 枚举+`version()`+`_run()` 生成器；实拉 9 类节点（agent/agent_v2/knowledge_retrieval/knowledge_index/datasource/human_input/trigger_×3）；`agent/strategy` 策略模式+插件化（`PluginAgentStrategy`→`PluginAgentClient`）；`human_input` HITL 暂停/恢复；`node_factory` 模块自注册机制。
+
 **建议下一步（按用户给定顺序）**：
 - ② ✅ 两平台源码级模块拆解对照 Ragent/Nexus（已完成）；
 - ① ✅ Ch10/11/12 的 Python 代码范式落盘（已完成）；
