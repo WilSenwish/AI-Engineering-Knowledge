@@ -132,7 +132,7 @@ jeecg-boot-module-airag/
 - 本篇是 `Java平台级AI解决方案-RuoYiAI与JEECG.md`（功能层）的**源码层深化**，二者共同构成 Java 栈"平台视角"双文档。
 - 交叉阅读：`阶段2-Java企业级Agent工程实践.md`（自研模块基准）、`阶段5-Java-AI运维观测.md`（SkyWalking/LangFuse）、`阶段6-Java-AI治理与合规风控.md`（Sa-Token/RBAC/信创）。
 - 与 Python 栈对照：Python 侧"平台"是 Dify/Coze/FastGPT（RuoYi/JEECG 也能接入），可在 `02-...-README.md` 平台视角章节补充同源对照。
-- **完成前篇"仍可补强"项**：RuoYi AI 与 JEECG 的源码级模块拆解（对照 Ragent/Nexus 多模块结构）已基本完成；平台侧"阶段3 测试"工程实践仍可作为后续补强（平台多把评测做成"知识库问答效果"配置，而非 CI 回归）。
+- **完成前篇"仍可补强"项**：① RuoYi AI 与 JEECG 的源码级模块拆解（对照 Ragent/Nexus 多模块结构）已完成；② 平台侧"阶段3 测试"工程实践已在 `Java平台级AI解决方案-RuoYiAI与JEECG.md` **§7** 落地（测试点 × 平台 × 自研 对照矩阵 + 平台测试工程化建议），交叉引用 `阶段3-测试质量保障/Java-AI测试与质量保障.md`。
 
 ---
 
